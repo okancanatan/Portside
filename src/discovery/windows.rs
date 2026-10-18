@@ -21,7 +21,18 @@ pub fn discover_ports() -> std::io::Result<Vec<ListeningPort>> {
     };
 
     let mut buffer = vec![0u32; (size as usize).div_ceil(4)];
-    
+ 
+    if status != ERROR_INSUFFICIENT_BUFFER {
+        return Err(std::io::Error::from_raw_os_error(status as i32));
+    }
+
+    if size == 0 {
+        return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "Windows returned a TCP table that has no content (size of 0)",
+                ));
+    }
+       
     let second_status = unsafe 
     {
         GetExtendedTcpTable(
@@ -34,11 +45,18 @@ pub fn discover_ports() -> std::io::Result<Vec<ListeningPort>> {
         )
     };
 
-
-    
     if second_status != 0 {
+     
         return Err(std::io::Error::from_raw_os_error(second_status as i32));
     }
+
+
+
+
+
+    let entry_count = buffer[0];
+    println!("TCP listening entries: {}", entry_count);
+
     println!("Windows Status: {}",status);
     println!("Required BUffer sze is {}", size);
     Ok(Vec::new())
