@@ -58,7 +58,29 @@ pub fn discover_ports() -> std::io::Result<Vec<ListeningPort>> {
     let entry_count = buffer[0];
     let row_size = std::mem::size_of::<MIB_TCPROW_OWNER_PID>();
     println!("tcp listening entries: {}", entry_count);
+
+    let row_size = std::mem::size_of::<MIB_TCPROW_OWNER_PID>();
+    let count = entry_count as usize;
+    let header_size = std::mem::size_of::<u32>();
+
+    let required_size = count
+        .checked_mul(row_size)
+        .and_then(|row_size| row_size.checked_add(header_size))
+        .ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "TCP table overflow",
+                )
+        })?;
     
+    if required_size > size as usize {
+        return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "TCP table is smaller than expected"
+                ));
+    }
+
+    println!("Expected TCP table size {}", required_size);
     println!("tcp record size (in bytes): {}", row_size);
     println!("Windows Status: {}",status);
     println!("Required BUffer sze is {}", size);
