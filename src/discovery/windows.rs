@@ -2,6 +2,7 @@ use super::ListeningPort;
 use windows_sys::Win32::NetworkManagement::IpHelper::{
     GetExtendedTcpTable,
     TCP_TABLE_OWNER_PID_LISTENER,
+    MIB_TCPROW_OWNER_PID,
 };
 use windows_sys::Win32::Networking::WinSock::AF_INET;
 use windows_sys::Win32::Foundation::ERROR_INSUFFICIENT_BUFFER;
@@ -55,8 +56,10 @@ pub fn discover_ports() -> std::io::Result<Vec<ListeningPort>> {
 
 
     let entry_count = buffer[0];
-    println!("TCP listening entries: {}", entry_count);
-
+    let row_size = std::mem::size_of::<MIB_TCPROW_OWNER_PID>();
+    println!("tcp listening entries: {}", entry_count);
+    
+    println!("tcp record size (in bytes): {}", row_size);
     println!("Windows Status: {}",status);
     println!("Required BUffer sze is {}", size);
     Ok(Vec::new())
