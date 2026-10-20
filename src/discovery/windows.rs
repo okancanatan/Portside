@@ -3,6 +3,7 @@ use windows_sys::Win32::NetworkManagement::IpHelper::{
     GetExtendedTcpTable,
     TCP_TABLE_OWNER_PID_LISTENER,
     MIB_TCPROW_OWNER_PID,
+    MIB_TCPTABLE_OWNER_PID,
 };
 use windows_sys::Win32::Networking::WinSock::AF_INET;
 use windows_sys::Win32::Foundation::ERROR_INSUFFICIENT_BUFFER;
@@ -79,6 +80,31 @@ pub fn discover_ports() -> std::io::Result<Vec<ListeningPort>> {
                 "TCP table is smaller than expected"
                 ));
     }
+
+   
+
+    let row_offset = std::mem::offset_of!(
+        MIB_TCPTABLE_OWNER_PID,
+        table
+    );
+
+
+    if entry_count > 0 {
+        let buffer_ptr = buffer.as_ptr();
+        let byte_ptr = buffer_ptr.cast::<u8>();
+        let first_row_ptr = unsafe {
+            byte_ptr.add(row_offset)
+        };
+        println!("First tcp record adress is {:p}", first_row_ptr);
+    }
+
+
+
+
+
+
+    println!("First TCP record offset: {} bvytes", row_offset);
+
 
     println!("Expected TCP table size {}", required_size);
     println!("tcp record size (in bytes): {}", row_size);
