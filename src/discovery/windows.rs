@@ -96,6 +96,16 @@ pub fn discover_ports() -> std::io::Result<Vec<ListeningPort>> {
             byte_ptr.add(row_offset)
         };
         println!("First tcp record adress is {:p}", first_row_ptr);
+
+        let first_row: MIB_TCPROW_OWNER_PID = unsafe {
+            std::ptr::read_unaligned(first_row_ptr.cast())
+        };
+        println!("Firrst listening process PID is {}", first_row.dwOwningPid);
+
+        let port_bytes = first_row.dwLocalPort.to_ne_bytes();
+        let port = u16::from_be_bytes([port_bytes[0], port_bytes[1]]);
+        println!("First listening port is {}", port);
+
     }
 
 
